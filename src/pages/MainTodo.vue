@@ -1,9 +1,27 @@
 <script setup>
 import { ref } from 'vue';
+import BaseButton from '/src/components/BaseButton.vue';
+import ButtonAdd from '/src/components/ButtonAdd.vue';
 import { useTodoList } from '/src/composables/useTodoList.js';
-const todoRef = ref('');
+const todoRef = ref();
 const isEditRef = ref(false);
-const { todoListRef, add, show, edit, del, check } = useTodoList();
+const { todoListRef, add, show, edit, del, check, countFin } = useTodoList();
+
+const inpSetup = document.getElementById('inp');
+console.log(inpSetup);
+
+// onMounted(() => {
+//   const inpMmount = document.getElementById('inp').value;
+//   console.log('inpMmount');
+// });
+
+// onUpdated(() => {
+//   console.log('onUpdated:', todoRef.value);
+// });
+
+const changeCheck = (id) => {
+  check(id);
+};
 
 const addTodo = () => {
   add(todoRef.value);
@@ -25,9 +43,17 @@ const deleteTodo = (id) => {
   del(id);
 };
 
-const changeCheck = (id) => {
-  check(id);
+const countFinMethod = () => {
+  console.log('method');
+  const finArr = todoListRef.value.filter((todo) => todo.checked);
+  return finArr.length;
 };
+
+const test = () => {
+  console.log('test');
+};
+
+console.log('setup');
 // const todoListRef = ref([
 //   { id: 1, task: 'TODO1' },
 //   { id: 2, task: 'TODO2' },
@@ -97,23 +123,40 @@ const changeCheck = (id) => {
 <template>
   <div class="box_input">
     <input
+      id="inp"
       type="text"
       class="todo_input"
       v-model="todoRef"
       placeholder=" + TODO を入力"
     />
-    <button class="btn green" @click="editTodo" v-show="isEditRef">変更</button>
-    <button class="btn" @click="addTodo" v-show="!isEditRef">追加</button>
+    <!-- <button class="btn green" @click="editTodo" v-if="isEditRef">変更</button>
+    <button class="btn" @click="addTodo" v-else>追加</button> -->
+    <BaseButton color="green" @on-click="editTodo" v-if="isEditRef"
+      >変更</BaseButton
+    >
+    <!-- <BaseButton color="brue" @on-click="addTodo" v-else>追加</BaseButton> -->
+    <ButtonAdd @add-click="addTodo" v-else>追加</ButtonAdd>
   </div>
   <div class="box_list">
     <div class="todo_list" v-for="todo in todoListRef" :key="todo.id">
-      <div class="todo">
-        <input type="checkbox" class="check" /><label>{{ todo.task }}</label>
+      <div class="todo" :class="{ fin: todo.checked }">
+        <input
+          type="checkbox"
+          class="check"
+          @change="changeCheck(todo.id)"
+          :checked="todo.checked"
+        /><label>{{ todo.task }}</label>
       </div>
       <div class="btns">
-        <button class="btn green" @click="showTodo(todo.id)">編</button>
-        <button class="btn pink" @click="deleteTodo(todo.id)">削</button>
+        <!-- <button class="btn green" @click="showTodo(todo.id)">編</button>
+        <button class="btn pink" @click="deleteTodo(todo.id)">削</button> -->
+        <BaseButton color="green" @on-click="showTodo(todo.id)">編</BaseButton>
+        <BaseButton color="pink" @on-click="deleteTodo(todo.id)">削</BaseButton>
       </div>
+    </div>
+    <div class="finCount">
+      <span>完了：{{ countFin }} 、</span>
+      <span>未完了：{{ todoListRef.length - countFin }}</span>
     </div>
   </div>
 
@@ -181,5 +224,16 @@ const changeCheck = (id) => {
 
 .pink {
   background-color: #ff4081;
+}
+
+.fin {
+  text-decoration: line-through;
+  background-color: #ddd;
+  color: #777;
+}
+
+.finCount {
+  margin-top: 8px;
+  font-size: 0.8em;
 }
 </style>
